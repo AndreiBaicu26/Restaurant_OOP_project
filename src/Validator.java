@@ -7,17 +7,11 @@ import java.security.spec.ECField;
 
 public class Validator {
 
-    public static Validator INSTANCE = null;
-
-    private Validator(){
-
-    }
-
     public static boolean validateMenuItemType(String menuItemType) {
         try {
-            if(menuItemType == MenuItemTypes.DRINKS.toString() ||
-                    menuItemType == MenuItemTypes.FOOD.toString() ||
-                    menuItemType == MenuItemTypes.DESSERTS.toString()){
+            if(menuItemType.equals(MenuItemTypes.DRINKS.toString()) ||
+                    menuItemType.equals(MenuItemTypes.FOOD.toString()) ||
+                    menuItemType.equals(MenuItemTypes.DESSERTS.toString())){
                 return true;
             }else {
                 throw new InvalidMenuTypeException("Selected menu type is invalid");
@@ -54,13 +48,5 @@ public class Validator {
 
     public static boolean validateName(String name){
         return name.trim().isEmpty();
-    }
-
-    public static Validator getINSTANCE(){
-        if(INSTANCE == null){
-            INSTANCE = new Validator();
-            return INSTANCE;
-        }
-        return INSTANCE;
     }
 }

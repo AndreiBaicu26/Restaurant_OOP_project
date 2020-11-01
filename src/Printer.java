@@ -3,6 +3,7 @@ import menuItems.MenuItem;
 import menuItems.MenuItemFactory;
 import menuItems.MenuItemTypes;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -11,7 +12,10 @@ public class Printer {
     private Menu menu;
     private ArrayList<String> waiters = new ArrayList<>();
     private boolean isNewClient = true;
+    private Order order;
     Scanner scanner = new Scanner(System.in);
+    private ArrayList<Order> orders = new ArrayList<>();
+
     public Printer() {
         this.menu = Menu.getINSTANCE();
         this.createWaiters();
@@ -38,19 +42,28 @@ public class Printer {
                         break;
                     }
                     case(1):{
-
+                        this.createNewMenuItem();
+                        break;
                     }
                     case (2): {
-                        System.out.println("No report available");
+                        if(this.orders.size() == 0){
+                            System.out.println("No report available, no orders yet");
+                        }
+
+                        else{
+                            Report report = new Report(this.orders);
+                            report.generateReport();
+                        }
                         break;
                     }
                     case (3): {
                         System.out.println("Exiting...");
-//                    MenuItemFactory factory = new MenuItemFactory();
-//                    String[] ing = {"Salad", "Tomatoes"};
-//                    MenuItem item = factory.getMenuItem(MenuItemTypes.FOOD, "Salad",ing , 23,true);
-//                    FileService reader = new FileService("menu.txt");
-//                    reader.addMenuItem(item);
+                        FileService reader = new FileService("src/menu.txt");
+                        try {
+                            reader.rewriteMenu();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         break;
                     }
                     default:{
@@ -81,41 +94,49 @@ public class Printer {
         }
         MenuItemTypes selectedType = MenuItemTypes.valueOf(type);
 
+        System.out.println("Insert the name of the new item: ");
         String name = this.scanner.nextLine();
-        while (!Validator.validatePrice(name)){
+        while (Validator.validateName(name)){
             name = this.scanner.nextLine();
         }
         String nameSelected = name;
 
+        //this.scanner.nextLine();
+        System.out.println("Insert the price: ");
         String price = this.scanner.nextLine();
         while (!Validator.validatePrice(price)){
             price = this.scanner.nextLine();
         }
         float priceSelected = Float.parseFloat(price);
 
+        System.out.println("Does it have gluten? (true/false): ");
         String hasGluten = this.scanner.nextLine();
         while (!Validator.validateHasGluten(hasGluten)){
             hasGluten = this.scanner.nextLine();
         }
-        Boolean hasGlutenSelected = Boolean.valueOf(hasGluten);
+        boolean hasGlutenSelected = Boolean.valueOf(hasGluten);
 
-        //TODO: Add method for adding ingredients to food
         MenuItemFactory factory = new MenuItemFactory();
-
             try {
                 if(selectedType.equals(MenuItemTypes.DRINKS)) {
                     MenuItem item = factory.getMenuItem(selectedType, nameSelected, null, priceSelected, !hasGlutenSelected);
                     this.menu.addMenuItem(item);
                 }else{
-                    MenuItem item = factory.getMenuItem(selectedType, nameSelected, null, priceSelected, !hasGlutenSelected);
+                    System.out.println("Insert number of ingredients: ");
+
+                    int numberOfIngredients = this.scanner.nextInt();
+                    this.scanner.nextLine();
+                    String[] ingredients = new String[numberOfIngredients];
+                    for (int i = 0; i < numberOfIngredients; i++) {
+                        System.out.println("Ingredient " + (i+1));
+                         ingredients[i] = this.scanner.nextLine();
+                    }
+                    MenuItem item = factory.getMenuItem(selectedType, nameSelected, ingredients, priceSelected, !hasGlutenSelected);
                     this.menu.addMenuItem(item);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-
-
     }
     private void printFirstOptions(){
         System.out.println("\n");
@@ -161,6 +182,7 @@ public class Printer {
                     }
                     case(5):{
                         this.printReceipt(order);
+                        this.orders.add(order);
                         option = -2;
                         break;
                     }
@@ -198,10 +220,7 @@ public class Printer {
     }
 
     private boolean isOptionValid(int option, ArrayList<Integer> menuItemsIds) {
-        if(menuItemsIds.contains(option)){
-            return true;
-        }
-        return false;
+        return menuItemsIds.contains(option);
     }
 
     private void printMenuOptions() {

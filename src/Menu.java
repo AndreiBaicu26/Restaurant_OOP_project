@@ -15,7 +15,7 @@ public class Menu {
             INSTANCE = new Menu();
             return INSTANCE;
         }
-        return null;
+        return INSTANCE;
     }
 
     public void addMenuItem(MenuItem menuItem){
